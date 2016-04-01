@@ -222,7 +222,7 @@ class Site extends MY_Controller
 		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_GRADER_TABLE_NAME'] . "` (
 			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
 			                `hostname` varchar(50) NOT NULL,
-			                `last_activity` datetime NOT NULL,
+			                `last_activity` datetime DEFAULT NULL,
 			                `pid` int(7) NOT NULL,
 			                PRIMARY KEY (`id`)
 			              ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
@@ -274,7 +274,7 @@ class Site extends MY_Controller
 			                `submission_cnt` int(4) unsigned NOT NULL,
 			                `time_penalty` int(4) unsigned NOT NULL,
 			                `is_accepted` tinyint(1) unsigned NOT NULL,
-			                `is_first_accepted` tinyint(1) unsigned NOT NULL,
+			                `is_first_accepted` tinyint(1) unsigned NOT NULL DEFAULT '0',
 			                PRIMARY KEY (`contest_id`,`user_id`,`problem_id`),
 			                KEY `contest_id` (`contest_id`),
 			                KEY `user_id` (`user_id`),
@@ -291,7 +291,7 @@ class Site extends MY_Controller
 			                `submission_cnt` int(4) unsigned NOT NULL,
 			                `time_penalty` int(4) unsigned NOT NULL,
 			                `is_accepted` tinyint(1) unsigned NOT NULL,
-			                `is_first_accepted` tinyint(1) unsigned NOT NULL,
+			                `is_first_accepted` tinyint(1) unsigned NOT NULL DEFAULT '0',
 			                PRIMARY KEY (`contest_id`,`user_id`,`problem_id`),
 			                KEY `contest_id` (`contest_id`),
 			                KEY `user_id` (`user_id`),
@@ -315,8 +315,8 @@ class Site extends MY_Controller
 			              `problem_id` int(4) unsigned NOT NULL,
 			              `language_id` int(4) unsigned NOT NULL,
 			              `submit_time` datetime NOT NULL,
-			              `start_judge_time` datetime NOT NULL,
-			              `end_judge_time` datetime NOT NULL,
+			              `start_judge_time` datetime DEFAULT NULL,
+			              `end_judge_time` datetime DEFAULT NULL,
 			              `verdict` int(4) NOT NULL DEFAULT '-1',
 			              PRIMARY KEY (`id`),
 			              KEY `user_id` (`user_id`),
