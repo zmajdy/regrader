@@ -2,14 +2,20 @@
 
 $lang['problem_list'] = 'Daftar Soal';
 $lang['add_new_problem'] = 'Tambah Soal Baru';
+$lang['add_new_testcase_packet'] = 'Tambah Subsoal Baru';
 $lang['showing_problems'] = 'Menampilkan soal ke-%d sampai dengan ke-%d dari total %d.';
 $lang['author'] = 'Pengarang';
 $lang['testcase'] = 'Kasus Uji';
 $lang['testcases'] = 'Kasus Uji';
+$lang['testcase_packet'] = 'Subsoal';
+$lang['testcase_packets'] = 'Subsoal';
 $lang['time_limit'] = 'Batas Waktu';
 $lang['memory_limit'] = 'Batas Memori';
+$lang['progressive_scoring'] = 'Penilaian Progresif';
 $lang['statement'] = 'Isi';
 $lang['second'] = 'detik';
+$lang['millisecond'] = 'milidetik';
+$lang['ms'] = 'ms';
 $lang['edit_problem'] = 'Sunting Soal';
 $lang['add_problem'] = 'Tambah Soal';
 $lang['add_problem_successful'] = 'Soal berhasil ditambahkan.';
@@ -45,14 +51,19 @@ $lang['default_statement'] = <<<SAMPLE
 </ul>
 SAMPLE;
 
+$lang['add_testcase_packet'] = 'Tambah Subsoal';
 $lang['add_testcase'] = 'Tambah Kasus Uji';
 $lang['add_checker'] = 'Tambah Checker';
+$lang['add_testcase_packet_successful'] = 'Subsoal berhasil ditambahkan.';
+$lang['delete_testcase_packet_successful'] = 'Subsoal berhasil ditambahkan.';
 $lang['add_testcase_successful'] = 'Kasus uji berhasil ditambahkan.';
 $lang['delete_testcase_successful'] = 'Kasus uji berhasil dihapus.';
 $lang['add_checker_successful'] = 'Checker berhasil diunggah dan dikompilasi.';
 $lang['delete_checker_successful'] = 'Checker berhasil dihapus.';
+$lang['edit_problem_testcase_packets'] = 'Sunting Subsoal-Subsoal Soal';
 $lang['edit_problem_testcases'] = 'Sunting Kasus-Kasus Uji Soal';
 $lang['edit_problem_checker'] = 'Sunting Checker Soal';
+$lang['short_description'] = 'Keterangan Singkat';
 $lang['input'] = 'Masukan';
 $lang['output'] = 'Keluaran';
 $lang['checker'] = 'Checker';
@@ -75,6 +86,9 @@ $lang['source_code'] = 'Berkas Jawaban';
 $lang['submit'] = 'Kumpulkan';
 $lang['submit_answer'] = 'Kumpulkan Berkas Jawaban';
 $lang['no_language'] = 'Belum ada bahasa.';
+
+$lang['packet_order_id'] = 'Subtask Number';
+$lang['score'] = 'Bobot';
 
 /* End of file problem_lang.php */
 /* Location: ./application/language/indonesian/problem_lang.php */

@@ -2,14 +2,20 @@
 
 $lang['problem_list'] = 'Problem List';
 $lang['add_new_problem'] = 'Add New Problem';
+$lang['add_new_testcase_packet'] = 'Add New Subtask';
 $lang['showing_problems'] = 'Showing problem %d through %d from %d total.';
 $lang['author'] = 'Author';
 $lang['testcase'] = 'Testcase';
 $lang['testcases'] = 'Testcases';
+$lang['testcase_packet'] = 'Subtask';
+$lang['testcase_packets'] = 'Subtasks';
 $lang['time_limit'] = 'Time Limit';
 $lang['memory_limit'] = 'Memory Limit';
+$lang['progressive_scoring'] = 'Progressive Scoring';
 $lang['statement'] = 'Statement';
 $lang['second'] = 'seconds';
+$lang['millisecond'] = 'milliseconds';
+$lang['ms'] = 'ms';
 $lang['edit_problem'] = 'Edit Problem';
 $lang['add_problem'] = 'Add Problem';
 $lang['add_problem_successful'] = 'Problem successfully added.';
@@ -45,14 +51,19 @@ $lang['default_statement'] = <<<SAMPLE
 </ul>
 SAMPLE;
 
+$lang['add_testcase_packet'] = 'Add Subtask';
 $lang['add_testcase'] = 'Add Testcase';
 $lang['add_checker'] = 'Add Checker';
+$lang['add_testcase_packet_successful'] = 'Subtask successfully added.';
+$lang['delete_testcase_packet_successful'] = 'Subtask successfully deleted.';
 $lang['add_testcase_successful'] = 'Testcase successfully added.';
 $lang['delete_testcase_successful'] = 'Testcase successfully deleted.';
 $lang['add_checker_successful'] = 'Checker successfully added.';
 $lang['delete_checker_successful'] = 'Checker successfully deleted.';
+$lang['edit_problem_testcase_packets'] = 'Edit Problem Subtasks';
 $lang['edit_problem_testcases'] = 'Edit Problem Testcases';
 $lang['edit_problem_checker'] = 'Edit Problem Checker';
+$lang['short_description'] = 'Short Description';
 $lang['input'] = 'Input';
 $lang['output'] = 'Output';
 $lang['checker'] = 'Checker';
@@ -75,6 +86,9 @@ $lang['source_code'] = 'Source Code';
 $lang['submit'] = 'Submit';
 $lang['submit_answer'] = 'Submit Answer';
 $lang['no_language'] = 'No languages.';
+
+$lang['packet_order_id'] = 'Subtask Number';
+$lang['score'] = 'Score';
 
 /* End of file problem_lang.php */
 /* Location: ./application/language/english/problem_lang.php */

@@ -21,6 +21,10 @@ $lang['input'] = 'Input';
 $lang['output'] = 'Output';
 $lang['memory'] = 'Memory';
 
+$lang['testcase_packet'] = 'Subtask';
+$lang['point'] = 'poin';
+$lang['pt'] = 'pt';
+
 $lang['verdict_0'] = 'Pending';
 $lang['verdict_1'] = 'Compile Error';
 $lang['verdict_2'] = 'Accepted';
