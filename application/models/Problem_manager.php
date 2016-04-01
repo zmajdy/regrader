@@ -35,12 +35,7 @@ class Problem_manager extends AR_Model
 	public function insert_row($attributes)
 	{
 		$insert_id = parent::insert_row($attributes);
-		$testcase_path = $this->setting->get('testcase_path') . '/' . $insert_id;
-		if ( ! is_dir($testcase_path))
-		{
-			mkdir($testcase_path);
-			chmod($testcase_path, 0777);
-		}
+		
 		$checker_path = $this->setting->get('checker_path') . '/' . $insert_id;
 		if ( ! is_dir($checker_path))
 		{
@@ -79,97 +74,12 @@ class Problem_manager extends AR_Model
 		}
 		else
 		{
-			$this->db->select($_ENV['DB_PROBLEM_TABLE_NAME'] . '.id AS id, name, author, time_limit, memory_limit, COUNT(' . $_ENV['DB_TESTCASE_TABLE_NAME'] . '.id) AS tc_count');
-			$this->db->join($_ENV['DB_TESTCASE_TABLE_NAME'], $_ENV['DB_TESTCASE_TABLE_NAME'] . '.problem_id=' . $_ENV['DB_PROBLEM_TABLE_NAME'] . '.id', 'left outer');
+			$this->db->select($_ENV['DB_PROBLEM_TABLE_NAME'] . '.id AS id, name, author, time_limit, memory_limit, COUNT(' . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . '.id) AS tc_count');
+			$this->db->join($_ENV['DB_TESTCASE_PACKET_TABLE_NAME'], $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . '.problem_id=' . $_ENV['DB_PROBLEM_TABLE_NAME'] . '.id', 'left outer');
 			$this->db->group_by($_ENV['DB_PROBLEM_TABLE_NAME'] . '.id');
 		}
 		
 		return parent::get_rows($criteria, $conditions);
-	}
-
-	/**
-	 * Adds a new testcase for a particular problem
-	 *
-	 * This function adds a new test case with input file $args['input'] and output file $args['output'] to the problem
-	 * whose ID is $args['problem_id'].
-	 * 
-	 * @param  array $args The parameter.
-	 * 
-	 * @return string An empty string if there is no error, or the current language representation of:
-	 * 				  - 'input_output_must_differ'
-	 *                - 'input_has_been_used'
-	 * 				  - 'output_has_been_used'
-	 */
-	public function add_testcase($args)
-	{
-		if ($args['input'] == $args['output'])
-			return $this->lang->line('input_output_must_differ');
-
-		$q = $this->db->query('SELECT * FROM ' . $_ENV['DB_TESTCASE_TABLE_NAME'] . ' WHERE problem_id=' . $args['problem_id'] . ' AND (input="' . $args['input'] . '" OR output="' . $args['input'] . '")');
-		if ($q->num_rows() > 0)
-			return $this->lang->line('input_has_been_used');
-
-		$q = $this->db->query('SELECT * FROM ' . $_ENV['DB_TESTCASE_TABLE_NAME'] . ' WHERE problem_id=' . $args['problem_id'] . ' AND (input="' . $args['output'] . '" OR output="' . $args['output'] . '")');
-		if ($q->num_rows() > 0)
-			return $this->lang->line('output_has_been_used');
-
-		$testcase_path = $this->setting->get('testcase_path') . '/' . $args['problem_id'];
-		
-		$this->load->library('upload');
-		$config['upload_path'] = $testcase_path;
-		$config['allowed_types'] = '*';
-		$config['file_name'] = $args['input'];
-		$config['remove_spaces'] = FALSE;
-
-		$this->upload->initialize($config);
-		$this->upload->do_upload('new_input');
-
-		if ($this->upload->display_errors() != '')
-			return $this->upload->display_errors();
-
-		$config['upload_path'] = $testcase_path;
-		$config['allowed_types'] = '*';
-		$config['file_name'] = $args['output'];
-		$config['remove_spaces'] = FALSE;
-
-		$this->upload->initialize($config);
-		$this->upload->do_upload('new_output');
-
-		if ($this->upload->display_errors() != '')
-			return $this->upload->display_errors();
-
-		$this->db->set('problem_id', $args['problem_id']);
-		$this->db->set('input', $args['input']);
-		$this->db->set('input_size', filesize($testcase_path . '/' . $args['input']));
-		$this->db->set('output', $args['output']);
-		$this->db->set('output_size', filesize($testcase_path . '/' . $args['output']));
-		$this->db->insert($_ENV['DB_TESTCASE_TABLE_NAME']);
-		return '';
-	}
-
-	/**
-	 * Deletes a particular testcase from a particular problem
-	 *
-	 * This function removes the testcase whose ID is $testcase_id.
-	 * 
-	 * @param int $testcase_id The testcase ID.
-	 */
-	public function delete_testcase($testcase_id)
-	{
-		$this->db->from($_ENV['DB_TESTCASE_TABLE_NAME']);
-		$this->db->where('id', $testcase_id);
-		$this->db->limit(1);
-		$q = $this->db->get();
-		if ($q->num_rows() == 0)
-			return;
-		$res = $q->row_array();
-
-		$this->db->where('id', $testcase_id);
-		$this->db->delete($_ENV['DB_TESTCASE_TABLE_NAME']);
-
-		$testcase_path = $this->setting->get('testcase_path') . '/' . $res['problem_id'];
-		unlink($testcase_path . '/' . $res['input']);
-		unlink($testcase_path . '/' . $res['output']);
 	}
 
 	/**
@@ -189,52 +99,7 @@ class Problem_manager extends AR_Model
 		return $q->result_array();
 	}
 
-	/**
-	 * Retrieves a particular testcase
-	 *
-	 * This function returns the testcase whose ID is $testcase_id.
-	 * 
-	 * @param int $testcase_id The testcase ID.
-	 *
-	 * @return array The testcase.
-	 */
-	public function get_testcase($testcase_id)
-	{
-		$this->db->from($_ENV['DB_TESTCASE_TABLE_NAME']);
-		$this->db->where('id', $testcase_id);
-		$q = $this->db->get();
-		if ($q->num_rows() == 0)
-			return FALSE;
-		return $q->row_array();
-	}
-
-	/**
-	 * Retrieves a particular testcase file content
-	 *
-	 * This function returns the content of the testcase whose ID is $testcase_id.
-	 *
-	 * 
-	 * @param int $testcase_id The testcase ID.
-	 *
-	 * @return string - If $direction is 'in', then the content of the input file will be returned.
-	 *                - If $direction is 'out', then the content of the output file will be returned.
-	 *                - Otherwise, an empty string is returned.
-	 */
-	public function get_testcase_content($testcase_id, $direction)
-	{
-		$this->db->select('problem_id, ' . $direction);
-		$this->db->from($_ENV['DB_TESTCASE_TABLE_NAME']);
-		$this->db->where('id', $testcase_id);
-		$this->db->limit(1);
-		$q = $this->db->get();
-		if ($q->num_rows() == 0)
-			return '';
-		$res = $q->row_array();
-
-		$testcase_path = $this->setting->get('testcase_path') . '/' . $res['problem_id'];
-		return file_get_contents($testcase_path . '/' . $res[$direction]);
-	}
-
+	
 	/**
 	 * Adds a new checker for a particular problem
 	 *
@@ -278,11 +143,6 @@ class Problem_manager extends AR_Model
 		$compile_cmd = $_ENV['CPP_EXECUTABLE_PATH'] . ' -std=c++11 -w -O3 -o ' . $checker_path . '/check ' . $checker_path . '/' . $args['checker'] . ' 2>&1';
 		exec($compile_cmd, $output, $retval);
 
-		if (0 !== @$retval) // fail while compiling
-		{
-			unlink($checker_path . '/' . $args['checker']); // delete the uploaded file
-			return $this->lang->line('checker_compile_error');
-		}
 
 		$this->db->set('problem_id', $args['problem_id']);
 		$this->db->set('checker', $args['checker']);

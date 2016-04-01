@@ -36,7 +36,7 @@ class Submission_manager extends AR_Model
 	public function get_row($submission_id)
 	{
 		$this->db->select($_ENV['DB_SUBMISSION_TABLE_NAME'] . '.id AS id, user_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.contest_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.problem_id,
-						   language_id, submit_time, start_judge_time, end_judge_time, verdict,
+						   language_id, submit_time, start_judge_time, end_judge_time, verdict, score, 
 			               ' . $_ENV['DB_USER_TABLE_NAME'] . '.name AS user_name, ' . $_ENV['DB_CONTEST_TABLE_NAME'] . '.name AS contest_name, ' . $_ENV['DB_PROBLEM_TABLE_NAME'] . '.name AS problem_name,
 			               ' . $_ENV['DB_LANGUAGE_TABLE_NAME'] . '.name AS language_name, ' . $_ENV['DB_LANGUAGE_TABLE_NAME'] . '.source_name AS language_source_name,
 			               alias AS problem_alias');
@@ -78,8 +78,7 @@ class Submission_manager extends AR_Model
 	 */
 	public function get_rows($criteria = array(), $conditions = array())
 	{
-		$this->db->select($_ENV['DB_SUBMISSION_TABLE_NAME'] . '.id AS id, user_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.contest_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.problem_id, language_id, submit_time, start_judge_time, end_judge_time, verdict,
-			               ' . $_ENV['DB_USER_TABLE_NAME'] . '.name AS user_name, ' . $_ENV['DB_CONTEST_TABLE_NAME'] . '.name AS contest_name, ' . $_ENV['DB_PROBLEM_TABLE_NAME'] . '.name AS problem_name, ' . $_ENV['DB_LANGUAGE_TABLE_NAME'] . '.name AS language_name,
+		$this->db->select($_ENV['DB_SUBMISSION_TABLE_NAME'] . '.id AS id, user_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.contest_id, ' . $_ENV['DB_SUBMISSION_TABLE_NAME'] . '.problem_id, language_id, submit_time, start_judge_time, end_judge_time, verdict, score, ' . $_ENV['DB_USER_TABLE_NAME'] . '.name AS user_name, ' . $_ENV['DB_CONTEST_TABLE_NAME'] . '.name AS contest_name, ' . $_ENV['DB_PROBLEM_TABLE_NAME'] . '.name AS problem_name, ' . $_ENV['DB_LANGUAGE_TABLE_NAME'] . '.name AS language_name,
 			               alias AS problem_alias');
 		$this->db->join($_ENV['DB_CONTEST_TABLE_NAME'], $_ENV['DB_CONTEST_TABLE_NAME'] . '.id=contest_id');
 		$this->db->join($_ENV['DB_PROBLEM_TABLE_NAME'], $_ENV['DB_PROBLEM_TABLE_NAME'] . '.id=problem_id');
@@ -157,20 +156,45 @@ class Submission_manager extends AR_Model
 	/**
 	 * Retrieves the judge results for a particular submission
 	 *
-	 * This function returns the judge result against all testcases for the submission whose ID is $submission_id.
-	 * 
+	 * This function returns the judge result against all testcases for the submission whose ID is $submission_id and
+	 * testcase packet ID is $testcase_packet_id.
+	 *
+	 * If $testcase_packet_id is 0, the function will return a nested array containing judging packets with each having
+	 * array of judgings.
+	 *
 	 * @param  int $submission_id The submission ID.
+	 * @param  int $testcase_packet_id The testcase packet ID.
 	 * 
 	 * @return array The judge results.
 	 */
-	public function get_judgings($submission_id)
+	public function get_judgings($submission_id, $testcase_packet_id = 0)
 	{
-		$this->db->select('testcase_id, input, output, time, memory, verdict');
-		$this->db->from($_ENV['DB_JUDGING_TABLE_NAME']);
-		$this->db->join($_ENV['DB_TESTCASE_TABLE_NAME'], $_ENV['DB_TESTCASE_TABLE_NAME'] . '.id=testcase_id');
-		$this->db->where('submission_id', $submission_id);
-		$q = $this->db->get();
-		return $q->result_array();
+		if ($testcase_packet_id == 0)
+		{
+			$this->db->select($_ENV['DB_JUDGING_PACKET_TABLE_NAME'] .'.id as jpid, testcase_packet_id, packet_order_id, verdict, '. $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] .'.score as testcase_packet_score');
+			$this->db->from($_ENV['DB_JUDGING_PACKET_TABLE_NAME']);
+			$this->db->join($_ENV['DB_TESTCASE_PACKET_TABLE_NAME'], 'testcase_packet_id='. $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] .'.id');
+			$this->db->where('submission_id', $submission_id);
+			$this->db->order_by('packet_order_id', 'ASC');
+			$q = $this->db->get();
+			$res = $q->result_array();
+
+			foreach ($res as &$v)
+			{
+				$v['judgings'] = $this->get_judgings($submission_id, $v['testcase_packet_id']);
+			}
+			unset($v);
+			return $res;
+		}
+		else
+		{
+			$this->db->select('testcase_id, input, output, time, memory, verdict');
+			$this->db->from($_ENV['DB_JUDGING_TABLE_NAME']);
+			$this->db->join($_ENV['DB_TESTCASE_TABLE_NAME'], $_ENV['DB_TESTCASE_TABLE_NAME'] .'.id=testcase_id AND '. $_ENV['DB_TESTCASE_TABLE_NAME'] .'.testcase_packet_id=' . $testcase_packet_id);
+			$this->db->where('submission_id', $submission_id);
+			$q = $this->db->get();
+			return $q->result_array();
+		}
 	}
 
 	/**
@@ -184,6 +208,9 @@ class Submission_manager extends AR_Model
 	{
 		$this->db->where('submission_id', $submission_id);
 		$this->db->delete($_ENV['DB_JUDGING_TABLE_NAME']);
+
+		$this->db->where('submission_id', $submission_id);
+		$this->db->delete($_ENV['DB_JUDGING_PACKET_TABLE_NAME']);
 		
 		$this->db->select('verdict');
 		$this->db->from($_ENV['DB_SUBMISSION_TABLE_NAME']);
