@@ -40,7 +40,33 @@
 			<?php else: ?>
 				<p><i><?php echo $this->lang->line('not_compiled'); ?></i></p>
 			<?php endif; ?>
-			
+			<?php foreach ($judgings as $v) : ?>
+				<h4><?php echo $this->lang->line('testcase_packet') . ' ' . $v['packet_order_id'] . ' (' . $v['testcase_packet_score'] . ' ' . $this->lang->line('point') . '): ' . $this->lang->line('verdict_' . $v['verdict']); ?></h4>
+				<table class="table table-bordered table-striped">
+					<thead>
+					<tr>
+						<th class="id-th"><i class="glyphicon glyphicon-tag glyphicon"></i></th>
+						<th><i class="glyphicon glyphicon-file glyphicon"></i> <?php echo $this->lang->line('input'); ?></th>
+						<th><i class="glyphicon glyphicon-file glyphicon"></i> <?php echo $this->lang->line('output'); ?></th>
+						<th><i class="glyphicon glyphicon-time glyphicon"></i> <?php echo $this->lang->line('time'); ?></th>
+						<th><i class="glyphicon glyphicon-download-alt glyphicon"></i> <?php echo $this->lang->line('memory'); ?></th>
+						<th><i class="glyphicon glyphicon-briefcase glyphicon"></i> <?php echo $this->lang->line('verdict'); ?></th>
+					</tr>
+					</thead>
+					<tbody>
+					<?php foreach ($v['judgings'] as $w) : ?>
+						<tr>
+							<td><?php echo $w['testcase_id']; ?></td>
+							<td><?php echo $w['input']; ?></td>
+							<td><?php echo $w['output']; ?></td>
+							<td><?php echo $w['time']; ?> ms</td>
+							<td><?php echo $w['memory']; ?> KB</td>
+							<td><?php echo $this->lang->line('verdict_' . max(0, $w['verdict'])); ?></td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endforeach; ?>
 			<form>
 				<div class="form-actions">
 					<a class="btn btn-default" href="<?php echo site_url('contestant/submission/viewAll/' . $page_offset); ?>"><?php echo $this->lang->line('back'); ?></a>

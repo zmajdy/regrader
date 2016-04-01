@@ -51,7 +51,7 @@ tinyMCE.init({
 					<label class="col-sm-2 control-label"><?php echo $this->lang->line('time_limit'); ?></label>
 					<div class= "col-sm-4">
 						<div class="input-group">
-							<input name="form[time_limit]" type="text" class="form-control" maxlength="8" value="<?php echo set_value('form[time_limit]', @$problem['time_limit']); ?>"/><span class="input-group-addon"><?php echo $this->lang->line('second'); ?></span>
+							<input name="form[time_limit]" type="text" class="form-control" maxlength="8" value="<?php echo set_value('form[time_limit]', @$problem['time_limit']); ?>"/><span class="input-group-addon"><?php echo $this->lang->line('millisecond'); ?></span>
 						</div>
 						<span class="help-block"><?php echo form_error('form[time_limit]'); ?></span>
 					</div>
@@ -64,6 +64,18 @@ tinyMCE.init({
 							<input name="form[memory_limit]" type="text" class="form-control" maxlength="8" value="<?php echo set_value('form[memory_limit]', @$problem['memory_limit']); ?>"/><span class="input-group-addon">MB</span>
 						</div>
 						<span class="help-block"><?php echo form_error('form[memory_limit]'); ?></span>
+					</div>
+				</div>
+
+				<div class="form-group<?php echo form_error('form[progressive_scoring]') == '' ? '' : ' has-error'; ?>">
+					<label class="col-sm-2 control-label"><?php echo $this->lang->line('progressive_scoring'); ?></label>
+					<div class= "col-sm-4">
+						<div class="checkbox">
+							<label>
+								<input name="form[progressive_scoring]" type="checkbox" value="1" <?php echo set_checkbox('form[progressive_scoring]', '1', (bool)@$problem['progressive_scoring']); ?>/> &nbsp;
+							</label>
+						</div>
+						<span class="help-block"><?php echo form_error('form[progressive_scoring]'); ?></span>
 					</div>
 				</div>
 

@@ -3,7 +3,8 @@
 		<div class="col-md-12">
 			<ul class="breadcrumb">
 				<li><i class="glyphicon glyphicon-book"></i> <?php echo $this->lang->line('problems'); ?></li>
-				<li><i class="glyphicon glyphicon-list-alt"></i> <?php echo $this->lang->line('problem'); ?> <?php echo $problem['id']; ?></li>
+				<li><i class="glyphicon glyphicon-list-alt"></i> <?php echo $this->lang->line('problem'); ?> <?php echo $problem_id; ?></li>
+				<li><i class="glyphicon glyphicon-list-alt"></i> <?php echo $this->lang->line('testcase_packet'); ?> <?php echo $testcase_packet['packet_order_id']; ?></li>
 			</ul>
 		</div>
 	</div>
@@ -50,7 +51,7 @@
 							<td class="operations-td">
 								<a href="<?php echo site_url('admin/problem/downloadTestcaseInput/' . $v['id']); ?>" rel="tooltip" title="<?php echo $this->lang->line('download_input'); ?>"><i class="glyphicon glyphicon-download"></i></a>
 								<a href="<?php echo site_url('admin/problem/downloadTestcaseOutput/' . $v['id']); ?>" rel="tooltip" title="<?php echo $this->lang->line('download_output'); ?>"><i class="glyphicon glyphicon-upload"></i></a>
-								<a href="<?php echo site_url('admin/problem/deleteTestcase/' . $problem['id'] . '/'. $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('delete'); ?>"><i class="glyphicon glyphicon-trash"></i></a>
+								<a href="<?php echo site_url('admin/problem/deleteTestcase/' . $problem_id . '/' . $testcase_packet['id'] . '/'. $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('delete'); ?>"><i class="glyphicon glyphicon-trash"></i></a>
 							</td>
 						</tr>
 					<?php endforeach; ?>
@@ -80,7 +81,7 @@
 
 				<div class="form-actions col-sm-offset-2">
 					<button type="submit" class="btn btn-danger"><i class="glyphicon glyphicon-plus"></i> <?php echo $this->lang->line('add'); ?></button>
-					<a class="btn btn-default" href="<?php echo site_url('admin/problem/viewAll/' . $page_offset); ?>"><?php echo $this->lang->line('cancel'); ?></a>
+					<a class="btn btn-default" href="<?php echo site_url('admin/problem/viewAllTestcasePackets/' . $problem_id . '/' . $page_offset); ?>"><?php echo $this->lang->line('cancel'); ?></a>
 				</div>
 			</form>
 		</div>

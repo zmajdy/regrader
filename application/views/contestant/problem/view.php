@@ -82,7 +82,7 @@
 			<h2 class="problem-title"><?php echo $problem['name']; ?></h2>
 			<table class="table table-bordered problem-limits">
 				<tr>
-					<td><?php echo $this->lang->line('time_limit'); ?></td><td><?php echo $problem['time_limit']; ?> <?php echo $this->lang->line('second'); ?></td>
+					<td><?php echo $this->lang->line('time_limit'); ?></td><td><?php echo $problem['time_limit']/1000; ?> <?php echo $this->lang->line('second'); ?></td>
 				</tr>
 				<tr>
 					<td><?php echo $this->lang->line('memory_limit'); ?></td><td><?php echo $problem['memory_limit']; ?> MB</td>

@@ -49,7 +49,7 @@
 						<th class="id-th"><i class="glyphicon glyphicon-tag"></i></th>
 						<th><i class="glyphicon glyphicon-eye-open"></i> <?php echo $this->lang->line('name'); ?></th>
 						<th><i class="glyphicon glyphicon-user"></i> <?php echo $this->lang->line('author'); ?></th>
-						<th class="problem-limits-th"><i class="glyphicon glyphicon-file"></i> <?php echo $this->lang->line('testcases'); ?></th>
+						<th class="problem-limits-th"><i class="glyphicon glyphicon-file"></i> <?php echo $this->lang->line('testcase_packets'); ?></th>
 						<th class="problem-limits-th"><i class="glyphicon glyphicon-calendar"></i> <?php echo $this->lang->line('time_limit'); ?></th>
 						<th class="problem-limits-th"><i class="glyphicon glyphicon-download-alt"></i> <?php echo $this->lang->line('memory_limit'); ?></th>
 						<th class="operations-th"><i class="glyphicon glyphicon-cog"></i></th>
@@ -63,11 +63,11 @@
 						<td><?php echo $v['name']; ?></td>
 						<td><?php echo $v['author']; ?></td>
 						<td><?php echo $v['tc_count']; ?></td>
-						<td><?php echo $v['time_limit']; ?> <?php echo $this->lang->line('second'); ?></td>
+						<td><?php echo $v['time_limit']; ?> <?php echo $this->lang->line('millisecond'); ?></td>
 						<td><?php echo $v['memory_limit']; ?> MB</td>
 						<td class="operations-td">
 							<a href="<?php echo site_url('admin/problem/edit/' . $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('edit'); ?>"><i class="glyphicon glyphicon-pencil"></i></a>
-							<a href="<?php echo site_url('admin/problem/editTestcases/' . $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('testcase'); ?>"><i class="glyphicon glyphicon-file"></i></a>
+							<a href="<?php echo site_url('admin/problem/viewAllTestcasePackets/' . $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('testcase_packet'); ?>"><i class="glyphicon glyphicon-file"></i></a>
 							<a href="<?php echo site_url('admin/problem/editChecker/' . $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('checker'); ?>"><i class="glyphicon glyphicon-check"></i></a>
 							<a href="<?php echo site_url('admin/problem/delete/' . $v['id'] . '/' . $page_offset); ?>" rel="tooltip" title="<?php echo $this->lang->line('delete'); ?>" onclick="return confirm('<?php printf($this->lang->line('confirm_delete_problem'), $v['id'], $v['name']); ?>');"><i class="glyphicon glyphicon-trash"></i></td>
 						</tr>
