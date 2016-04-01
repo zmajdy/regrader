@@ -87,6 +87,7 @@ class Submission extends Contestant_Controller
 	public function view($submission_id, $page_offset)
 	{
 		$submission = $this->submission_manager->get_row($submission_id);
+		$judgings   = $this->submission_manager->get_judgings($submission_id);
 
 		if ( ! $submission)
 			show_404();
@@ -101,6 +102,7 @@ class Submission extends Contestant_Controller
 		$this->ui['header']['custom_js'] = array('vendor/google-code-prettify/bin/prettify.min.js');
 		$this->ui['content']['page_offset'] = $page_offset;
 		$this->ui['content']['submission'] = $submission;
+		$this->ui['content']['judgings'] = $judgings;
 		
 		$this->load->view('contestant/header', $this->ui['header']);
 		$this->load->view('contestant/submission/view', $this->ui['content']);

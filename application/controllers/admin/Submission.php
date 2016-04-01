@@ -179,6 +179,10 @@ class Submission extends Admin_Controller
 			'problem_id' => $submission['problem_id'],
 			'user_id' => $submission['user_id']
 		];
+
+		$this->scoreboard_manager->clear_data('admin', $args);
+		$this->scoreboard_manager->clear_data('contest', $args);
+
 		$this->scoreboard_manager->recalculate_scores($args);
 
 		redirect('admin/submission/viewAll/' . $contest_id . '/' . $problem_id . '/' . $user_id . '/' . $page_offset);

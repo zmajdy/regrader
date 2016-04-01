@@ -18,7 +18,7 @@ class Scoreboard extends Admin_Controller
 	public function __construct()
 	{
 		parent::__construct();
-		$this->load->model('contest_manager');
+		$this->load->model('contest_manager'); 
 		$this->load->model('scoreboard_manager');
 		$this->load->language('scoreboard');
 	}

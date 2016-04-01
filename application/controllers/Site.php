@@ -163,6 +163,16 @@ class Site extends MY_Controller
 		                    PRIMARY KEY (`id`)
 		                  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
 
+		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_CHECKER_TABLE_NAME'] . "`");
+		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_CHECKER_TABLE_NAME'] . "` (
+			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
+		                    `problem_id` int(4) unsigned NOT NULL,
+		                    `checker` varchar(255) NOT NULL,
+		                    `checker_size` int(4) unsigned NOT NULL,
+		                    PRIMARY KEY (`id`),
+		                    KEY `problem_id` (`problem_id`)
+		                  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_CLARIFICATION_TABLE_NAME'] . "`");
 		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_CLARIFICATION_TABLE_NAME'] . "` (
 			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
@@ -240,6 +250,17 @@ class Site extends MY_Controller
 			                KEY `testcase_id` (`testcase_id`)
 			              ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
 
+		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_JUDGING_PACKET_TABLE_NAME'] . "`");
+		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_JUDGING_PACKET_TABLE_NAME'] . "` (
+			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
+			                `submission_id` int(4) unsigned NOT NULL,
+			                `testcase_packet_id` int(4) unsigned NOT NULL,
+			                `verdict` int(4) NOT NULL,
+			                PRIMARY KEY (`id`),
+			                KEY `submission_id` (`submission_id`),
+			                KEY `testcase_packet_id` (`testcase_packet_id`)
+			              ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "`");
 		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "` (
 			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
@@ -263,6 +284,7 @@ class Site extends MY_Controller
 			                `statement` text NOT NULL,
 			                `time_limit` int(4) unsigned NOT NULL,
 			                `memory_limit` int(4) unsigned NOT NULL,
+			                `progressive_scoring` tinyint(1) NOT NULL DEFAULT '0',
 			                PRIMARY KEY (`id`)
 			              ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
 
@@ -271,16 +293,12 @@ class Site extends MY_Controller
 			                `contest_id` int(4) unsigned NOT NULL,
 			                `user_id` int(4) unsigned NOT NULL,
 			                `problem_id` int(4) unsigned NOT NULL,
-			                `submission_cnt` int(4) unsigned NOT NULL,
-			                `time_penalty` int(4) unsigned NOT NULL,
-			                `is_accepted` tinyint(1) unsigned NOT NULL,
-			                `is_first_accepted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+			                `last_submit_time` int(10) unsigned  NOT NULL,
+			                `score` int(4) unsigned NOT NULL,
 			                PRIMARY KEY (`contest_id`,`user_id`,`problem_id`),
 			                KEY `contest_id` (`contest_id`),
 			                KEY `user_id` (`user_id`),
-			                KEY `problem_id` (`problem_id`),
-			                KEY `contest_problem_entry` (`contest_id`, `problem_id`),
-			                KEY `first_accepted_entry` (`contest_id`, `problem_id`, `is_first_accepted`)
+			                KEY `problem_id` (`problem_id`)
                           ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_SCOREBOARD_CONTESTANT_TABLE_NAME'] . "`");
@@ -288,16 +306,12 @@ class Site extends MY_Controller
 			                `contest_id` int(4) unsigned NOT NULL,
 			                `user_id` int(4) unsigned NOT NULL,
 			                `problem_id` int(4) unsigned NOT NULL,
-			                `submission_cnt` int(4) unsigned NOT NULL,
-			                `time_penalty` int(4) unsigned NOT NULL,
-			                `is_accepted` tinyint(1) unsigned NOT NULL,
-			                `is_first_accepted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+			                `last_submit_time` int(10) unsigned NOT NULL,
+			                `score` int(4) unsigned NOT NULL,
 			                PRIMARY KEY (`contest_id`,`user_id`,`problem_id`),
 			                KEY `contest_id` (`contest_id`),
 			                KEY `user_id` (`user_id`),
-			                KEY `problem_id` (`problem_id`),
-			                KEY `contest_problem_entry` (`contest_id`, `problem_id`),
-			                KEY `first_accepted_entry` (`contest_id`, `problem_id`, `is_first_accepted`)
+			                KEY `problem_id` (`problem_id`)
                           ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_SETTING_TABLE_NAME'] . "`");
@@ -317,6 +331,7 @@ class Site extends MY_Controller
 			              `submit_time` datetime NOT NULL,
 			              `start_judge_time` datetime DEFAULT NULL,
 			              `end_judge_time` datetime DEFAULT NULL,
+			              `score` int(4) NOT NULL DEFAULT '0',
 			              `verdict` int(4) NOT NULL DEFAULT '-1',
 			              PRIMARY KEY (`id`),
 			              KEY `user_id` (`user_id`),
@@ -329,22 +344,24 @@ class Site extends MY_Controller
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_TESTCASE_TABLE_NAME'] . "`");
 		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_TESTCASE_TABLE_NAME'] . "` (
 			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
-		                    `problem_id` int(4) unsigned NOT NULL,
+		                    `testcase_packet_id` int(4) unsigned NOT NULL,
 		                    `input` varchar(255) NOT NULL,
 		                    `input_size` int(4) unsigned NOT NULL,
 		                    `output` varchar(255) NOT NULL,
 		                    `output_size` int(4) unsigned NOT NULL,
 		                    PRIMARY KEY (`id`),
-		                    KEY `problem_id` (`problem_id`)
+		                    KEY `testcase_packet_id` (`testcase_packet_id`)
 		                  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
 
-		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_CHECKER_TABLE_NAME'] . "`");
-		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_CHECKER_TABLE_NAME'] . "` (
+		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . "`");
+		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . "` (
 			                `id` int(4) unsigned NOT NULL AUTO_INCREMENT,
+			                `packet_order_id` int(4) unsigned NOT NULL,
+			                `short_description` text NOT NULL,
 		                    `problem_id` int(4) unsigned NOT NULL,
-		                    `checker` varchar(255) NOT NULL,
-		                    `checker_size` int(4) unsigned NOT NULL,
+		                    `score` int(4) unsigned NOT NULL,
 		                    PRIMARY KEY (`id`),
+		                    KEY `packet_order_id` (`packet_order_id`),
 		                    KEY `problem_id` (`problem_id`)
 		                  ) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
 
@@ -352,8 +369,8 @@ class Site extends MY_Controller
 		$this->db->query("CREATE TABLE IF NOT EXISTS `" . $_ENV['DB_UNREAD_CLARIFICATION_TABLE_NAME'] . "` (
 			                `user_id` int(4) unsigned DEFAULT NULL,
 			                `clarification_id` int(4) unsigned NOT NULL,
-			                KEY `unread_clarification_ibfk_2` (`clarification_id`),
-			                KEY `unread_clarification_ibfk_1` (`user_id`)
+			                KEY `ioi_unread_clarification_ibfk_2` (`clarification_id`),
+			                KEY `ioi_unread_clarification_ibfk_1` (`user_id`)
 			              ) ENGINE=InnoDB DEFAULT CHARSET=utf8");
 
 		$this->db->query("DROP TABLE IF EXISTS `" . $_ENV['DB_USER_TABLE_NAME'] . "`");
@@ -375,53 +392,60 @@ class Site extends MY_Controller
 	private function create_db_constraints()
 	{
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_CLARIFICATION_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `clarification_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `clarification_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_clarification_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_clarification_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_CONTEST_LANGUAGE_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `contest_language_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `contest_language_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_contest_language_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_contest_language_ibfk_2` FOREIGN KEY (`language_id`) REFERENCES `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_CONTEST_MEMBER_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `contest_member_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `contest_member_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `" . $_ENV['DB_CATEGORY_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_contest_member_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_contest_member_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `" . $_ENV['DB_CATEGORY_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_CONTEST_PROBLEM_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `contest_problem_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `contest_problem_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_contest_problem_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_contest_problem_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_JUDGING_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `judging_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `" . $_ENV['DB_SUBMISSION_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `judging_ibfk_2` FOREIGN KEY (`testcase_id`) REFERENCES `" . $_ENV['DB_TESTCASE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_judging_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `" . $_ENV['DB_SUBMISSION_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_judging_ibfk_2` FOREIGN KEY (`testcase_id`) REFERENCES `" . $_ENV['DB_TESTCASE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+
+		$this->db->query("ALTER TABLE `" . $_ENV['DB_JUDGING_PACKET_TABLE_NAME'] . "`
+			                ADD CONSTRAINT `ioi_judging_packet_ibfk_1` FOREIGN KEY (`submission_id`) REFERENCES `" . $_ENV['DB_SUBMISSION_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_judging_packet_ibfk_2` FOREIGN KEY (`testcase_packet_id`) REFERENCES `" . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_SCOREBOARD_ADMIN_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `scoreboard_admin_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `scoreboard_admin_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `scoreboard_admin_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_scoreboard_admin_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_scoreboard_admin_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_scoreboard_admin_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_SCOREBOARD_CONTESTANT_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `scoreboard_contestant_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `scoreboard_contestant_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `scoreboard_contestant_ibfk_3` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_scoreboard_contestant_ibfk_1` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_scoreboard_contestant_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_scoreboard_contestant_ibfk_3` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_SUBMISSION_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `submission_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `submission_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `submission_ibfk_3` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `submission_ibfk_4` FOREIGN KEY (`language_id`) REFERENCES `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_submission_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_submission_ibfk_2` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_submission_ibfk_3` FOREIGN KEY (`contest_id`) REFERENCES `" . $_ENV['DB_CONTEST_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_submission_ibfk_4` FOREIGN KEY (`language_id`) REFERENCES `" . $_ENV['DB_LANGUAGE_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_TESTCASE_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `testcase_ibfk_1` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_testcase_ibfk_1` FOREIGN KEY (`testcase_packet_id`) REFERENCES `" . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+
+		$this->db->query("ALTER TABLE `" . $_ENV['DB_TESTCASE_PACKET_TABLE_NAME'] . "`
+			                ADD CONSTRAINT `ioi_testcase_packet_ibfk_1` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_CHECKER_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `checker_ibfk_1` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_checker_ibfk_1` FOREIGN KEY (`problem_id`) REFERENCES `" . $_ENV['DB_PROBLEM_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_UNREAD_CLARIFICATION_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `unread_clarification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-			                ADD CONSTRAINT `unread_clarification_ibfk_2` FOREIGN KEY (`clarification_id`) REFERENCES `" . $_ENV['DB_CLARIFICATION_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_unread_clarification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `" . $_ENV['DB_USER_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+			                ADD CONSTRAINT `ioi_unread_clarification_ibfk_2` FOREIGN KEY (`clarification_id`) REFERENCES `" . $_ENV['DB_CLARIFICATION_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	
 		$this->db->query("ALTER TABLE `" . $_ENV['DB_USER_TABLE_NAME'] . "`
-			                ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `" . $_ENV['DB_CATEGORY_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
+			                ADD CONSTRAINT `ioi_user_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `" . $_ENV['DB_CATEGORY_TABLE_NAME'] . "` (`id`) ON DELETE CASCADE ON UPDATE CASCADE");
 	}
 
 	private function insert_default_rows()
@@ -471,6 +495,7 @@ class Site extends MY_Controller
 		mkdir($name);
 		chmod($name, 0775);
 	}
+
 }
 
 /* End of file site.php */

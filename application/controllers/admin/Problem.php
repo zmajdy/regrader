@@ -8,7 +8,7 @@
  * @package controllers
  * @author Ashar Fuadi <fushar@gmail.com>
  */
-class Problem extends Admin_Controller
+class Problem extends Admin_Controller 
 {
 	/**
 	 * Constructs a new controller object
@@ -19,6 +19,7 @@ class Problem extends Admin_Controller
 	{
 		parent::__construct();
 		$this->load->model('problem_manager');
+		$this->load->model('testcase_packet_manager');
 		$this->load->library('pagination');
 		$this->load->language('problem');
 	}
@@ -37,7 +38,7 @@ class Problem extends Admin_Controller
 	 * Shows all problems
 	 *
 	 * This function shows config('items_per_page') problems, starting from $page_offset-th page.
-	 *
+	 * 
 	 * @param int $page_offset The page number to show.
 	 */
 	public function viewAll($page_offset = 1)
@@ -69,10 +70,30 @@ class Problem extends Admin_Controller
 	}
 
 	/**
+	 * Shows all subtasks for problem with id $problem_id
+	 *
+	 * @param int $problem_id The problem ID.
+	 * @param int $page_offset The previous viewAll page number.
+	 */
+	public function viewAllTestcasePackets($problem_id, $page_offset)
+	{
+		$this->ui['header']['page'] = 'problem';
+		$this->ui['header']['title'] = $this->lang->line('edit_problem_testcase_packets') . ' ' . $problem_id;
+
+		$this->ui['content']['testcase_packets'] = $this->testcase_packet_manager->get_testcase_packets($problem_id);
+		$this->ui['content']['problem_id'] = $problem_id;
+		$this->ui['content']['page_offset'] = $page_offset;
+
+		$this->load->view('admin/header', $this->ui['header']);
+		$this->load->view('admin/problem/viewAllTestcasePackets', $this->ui['content']);
+		$this->load->view('footer', $this->ui['footer']);
+	}
+
+	/**
 	 * Shows the add or edit problem page
 	 *
 	 * This function shows an add problem page if $problem_id is 0, otherwise it shows an edit problem page.
-	 *
+	 * 
 	 * @param int $problem_id The problem ID.
 	 * @param int $page_offset The previous viewAll page number.
 	 */
@@ -82,11 +103,11 @@ class Problem extends Admin_Controller
 		$this->form_validation->set_rules('form[author]', $this->lang->line('author'), 'trim|required');
 		$this->form_validation->set_rules('form[time_limit]', $this->lang->line('time_limit'), 'trim|required|integer|greater_than[0]');
 		$this->form_validation->set_rules('form[memory_limit]', $this->lang->line('memory_limit'), 'trim|required|integer|greater_than[0]');
-
+		
 		if ($this->form_validation->run())
 		{
 			$form = $this->input->post('form');
-
+			$form['progressive_scoring'] = isset($form['progressive_scoring']) ? $form['progressive_scoring'] : 0;
 			if ($problem_id == 0)
 			{
 				$this->problem_manager->insert_row($form);
@@ -97,7 +118,7 @@ class Problem extends Admin_Controller
 				$this->problem_manager->update_row($problem_id, $form);
 				$this->session->set_flashdata('edit_successful', true);
 			}
-
+			
 			redirect('admin/problem/viewAll');
 		}
 		else
@@ -112,22 +133,76 @@ class Problem extends Admin_Controller
 			$this->ui['header']['page'] = 'problem';
 			$this->ui['header']['custom_js'] = array('vendor/tinymce/tinymce.min.js');
 			$this->ui['content']['page_offset'] = $page_offset;
-
+			
 			$this->load->view('admin/header', $this->ui['header']);
 			$this->load->view('admin/problem/edit', $this->ui['content']);
 			$this->load->view('footer', $this->ui['footer']);
 		}
 	}
 
+	/**
+	 * Shows the edit testcase packets page
+	 *
+	 * This function shows the edit testcase packets page.
+	 *
+	 * @param int $problem_id The problem ID.
+	 * @param int $testcase_packet_id The testcase packet ID.
+	 * @param int $page_offset The previous viewAll page number.
+	 */
+	public function editTestcasePacket($problem_id, $testcase_packet_id, $page_offset)
+	{
+		$this->form_validation->set_rules('form[packet_order_id]', $this->lang->line('name'), 'trim|required|integer|greater_than[-1]|less_than[11]');
+		$this->form_validation->set_rules('form[score]', $this->lang->line('memory_limit'), 'trim|required|integer|greater_than[-1]');
+
+		if ($this->form_validation->run())
+		{
+			$form = $this->input->post('form');
+			$form['problem_id'] = $problem_id;
+
+			if ($testcase_packet_id == 0)
+			{
+				$this->testcase_packet_manager->insert_row($form);
+				$this->session->set_flashdata('add_successful', true);
+			}
+			else
+			{
+				$this->testcase_packet_manager->update_row($testcase_packet_id, $form);
+				$this->session->set_flashdata('edit_successful', true);
+			}
+
+			redirect('admin/problem/viewAllTestcasePackets/' . $problem_id . '/' . $page_offset);
+		}
+		else
+		{
+			if ($testcase_packet_id == 0);
+			else
+			{
+				$this->ui['header']['title'] = $this->lang->line('edit_problem_testcase_packets') . ' ' . $problem_id;
+				$this->ui['content']['testcase_packet'] = $this->testcase_packet_manager->get_row($testcase_packet_id);
+			}
+
+
+			$this->ui['header']['page'] = 'problem';
+			$this->ui['header']['custom_js'] = array('tiny_mce/tinymce.min.js');
+			$this->ui['content']['problem_id'] = $problem_id;
+			$this->ui['content']['page_offset'] = $page_offset;
+
+			$this->load->view('admin/header', $this->ui['header']);
+			$this->load->view('admin/problem/editTestcasePacket', $this->ui['content']);
+			$this->load->view('footer', $this->ui['footer']);
+		}
+	}
+ 
  	/**
 	 * Shows the edit testcases page
 	 *
 	 * This function shows the edit testcases page.
-	 *
+	 * 
 	 * @param int $problem_id The problem ID.
+     * @param int $testcase_packet_id The testcase packet ID.
 	 * @param int $page_offset The previous viewAll page number.
 	 */
- 	public function editTestcases($problem_id, $page_offset)
+ 	public function editTestcases($problem_id, $testcase_packet_id, $page_offset)
 	{
 		$this->form_validation->set_rules('hidden', 'Hidden', 'required');
 		$this->form_validation->set_rules('new_input', $this->lang->line('input'), 'callback__check_new_input');
@@ -138,20 +213,22 @@ class Problem extends Admin_Controller
 			$args['problem_id'] = $problem_id;
 			$args['input'] = $_FILES['new_input']['name'];
 			$args['output'] = $_FILES['new_output']['name'];
+			$args['testcase_packet_id'] = $testcase_packet_id;
 
-			$error = $this->problem_manager->add_testcase($args);
+			$error = $this->testcase_packet_manager->add_testcase($args);
 			if ($error != '')
 				$this->session->set_flashdata('error', $error);
 			else
 				$this->session->set_flashdata('add_successful', true);
-			redirect('admin/problem/editTestcases/' . $problem_id . '/' . $page_offset);
+			redirect('admin/problem/editTestcases/' . $problem_id . '/' . $testcase_packet_id . '/' . $page_offset);
 		}
 		else
 		{
-			$this->ui['content']['testcases'] = $this->problem_manager->get_testcases($problem_id);
-			$this->ui['content']['problem'] = $this->problem_manager->get_row($problem_id);
+			$this->ui['content']['testcases'] = $this->testcase_packet_manager->get_testcases($testcase_packet_id);
+			$this->ui['content']['testcase_packet'] = $this->testcase_packet_manager->get_row($testcase_packet_id);
 			$this->ui['header']['title'] = $this->lang->line('edit_problem_testcases') . ' ' . $problem_id;
 			$this->ui['header']['page'] = 'problem';
+			$this->ui['content']['problem_id'] = $problem_id;
 			$this->ui['content']['page_offset'] = $page_offset;
 
 			$this->load->view('admin/header', $this->ui['header']);
@@ -159,12 +236,12 @@ class Problem extends Admin_Controller
 			$this->load->view('footer', $this->ui['footer']);
 		}
 	}
-
+ 
  	/**
 	 * Shows the edit checker page
 	 *
 	 * This function shows the edit checker page.
-	 *
+	 * 
 	 * @param int $problem_id The problem ID.
 	 * @param int $page_offset The previous viewAll page number.
 	 */
@@ -205,24 +282,25 @@ class Problem extends Admin_Controller
 	 * This function deletes a testcase whose ID is $testcase_id and then redirects to edit testcases page.
 	 *
 	 * @param int $problem_id The problem ID.
+	 * @param int $testcase_packet_id The testcase packet ID.
 	 * @param int $testcase_id The testcase ID.
 	 * @param int $page_offset The previous viewAll page number.
 	 */
-	public function deleteTestcase($problem_id, $testcase_id, $page_offset)
+	public function deleteTestcase($problem_id, $testcase_packet_id, $testcase_id, $page_offset)
 	{
-		$error = $this->problem_manager->delete_testcase($testcase_id);
+		$error = $this->testcase_packet_manager->delete_testcase($testcase_id);
 		if ($error != '')
 			$this->session->set_flashdata('error', $error);
 		else
 			$this->session->set_flashdata('delete_successful', true);
-		redirect('admin/problem/editTestcases/' . $problem_id . '/' . $page_offset);
+		redirect('admin/problem/editTestcases/' . $problem_id . '/' . $testcase_packet_id . '/' . $page_offset);
 	}
 
 	/**
 	 * Deletes a checker
 	 *
 	 * This function deletes a checker whose ID is $checker_id and then redirects to edit checker page.
-	 *
+	 * 
 	 * @param int $problem_id The problem ID.
 	 * @param int $checker_id The checker ID.
 	 * @param int $page_offset The previous viewAll page number.
@@ -241,14 +319,14 @@ class Problem extends Admin_Controller
 	 * Downloads the input of a testcase
 	 *
 	 * This function downloads the input of the testcase whose ID is $testcase_id.
-	 *
+	 * 
 	 * @param int $testcase_id The testcase ID.
 	 */
 	public function downloadTestcaseInput($testcase_id)
 	{
 		$this->load->helper('download');
-		$testcase = $this->problem_manager->get_testcase($testcase_id);
-		$content = $this->problem_manager->get_testcase_content($testcase_id, 'input');
+		$testcase = $this->testcase_packet_manager->get_testcase($testcase_id);
+		$content = $this->testcase_packet_manager->get_testcase_content($testcase_id, 'input');
 
 		force_download($testcase['input'], $content);
 	}
@@ -257,14 +335,14 @@ class Problem extends Admin_Controller
 	 * Downloads the output of a testcase
 	 *
 	 * This function downloads the output of the testcase whose ID is $testcase_id.
-	 *
+	 * 
 	 * @param int $testcase_id The testcase ID.
 	 */
 	public function downloadTestcaseOutput($testcase_id)
 	{
 		$this->load->helper('download');
-		$testcase = $this->problem_manager->get_testcase($testcase_id);
-		$content = $this->problem_manager->get_testcase_content($testcase_id, 'output');
+		$testcase = $this->testcase_packet_manager->get_testcase($testcase_id);
+		$content = $this->testcase_packet_manager->get_testcase_content($testcase_id, 'output');
 
 		force_download($testcase['output'], $content);
 	}
@@ -273,7 +351,7 @@ class Problem extends Admin_Controller
 	 * Downloads the checker of a problem
 	 *
 	 * This function downloads the checker whose ID is $checker_id.
-	 *
+	 * 
 	 * @param int $checker_id The testcase ID.
 	 */
 	public function downloadChecker($checker_id)
@@ -340,7 +418,7 @@ class Problem extends Admin_Controller
 	 * Deletes a problem
 	 *
 	 * This function deletes a problem whose ID is $problem_id and then redirects to viewAll page.
-	 *
+	 * 
 	 * @param int $problem_id The problem ID.
 	 * @param int $page_offset The previous viewAll page number.
 	 */
@@ -349,6 +427,19 @@ class Problem extends Admin_Controller
 		$this->problem_manager->delete_row($problem_id);
 		$this->session->set_flashdata('delete_successful', true);
 		redirect('admin/problem/viewAll/' . $page_offset);
+	}
+
+	/**
+	 * Deletes a testcase packet
+	 *
+	 * This function deletes a testcase packet whose ID is $testcase_packet_id and its problem ID is
+	 * $problem_id. Not only deletes the packet, it also deletes the packet's testcases
+	 */
+	public function deleteTestcasePacket($problem_id, $testcase_packet_id, $page_offset)
+	{
+		$this->testcase_packet_manager->delete_testcase_packet($testcase_packet_id);
+		$this->session->set_flashdata('delete_successful', true);
+		redirect('admin/problem/viewAllTestcasePackets/' . $problem_id . '/' . $page_offset);
 	}
 }
 
